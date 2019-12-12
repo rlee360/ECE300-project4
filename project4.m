@@ -9,10 +9,9 @@ SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
 trainlen = 100;
 M = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
-M = 4;
+%M = 4;
 chan = 1;          % No channel
-%chan = [1 .2 .4]; % Somewhat invertible channel impulse response, Moderate ISI%
-%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI
+%%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI
 
 
 % Create a vector to store the BER computed during each iteration
@@ -20,9 +19,9 @@ chan = 1;          % No channel
 
 for m_ary=M
     berVec = zeros(numIter, lenSNR);
-    for i = 1:numIter
+    for ii = 1:numIter
 
-        bits = randi([0 1], nSym*(log2(m_ary)), 1);     % Generate random bits
+        msg = randi([0, m_ary-1], nSym*(log2(m_ary)), 1);     % Generate random bits
         % New bits must be generated at every
         % iteration
 
@@ -32,11 +31,13 @@ for m_ary=M
     
         % We reshape bits so that there are a proper number of bits per row,
         % Then we convert each row to decimal and move on.
-        msg = reshape(bits,[nSym, log2(m_ary)]);
-        msg = bi2de(msg,'left-msb');
+        %msg = reshape(bits,[nSym, log2(m_ary)]);
+        %msg = bi2de(msg,'left-msb');
         %msg = bits;
+        bits = de2bi(msg, 'left-msb').'; %transpose here 
+        bits = bits(:);
 
-        for j = 1:lenSNR % one iteration of the simulation at each SNR Value
+        for jj = 1:lenSNR % one iteration of the simulation at each SNR Value
             tx = qammod(msg,m_ary);  % BPSK modulate the signal
             
             %if m_ary == 4:
@@ -44,9 +45,10 @@ for m_ary=M
             if m_ary == 2
                 if isequal(chan,1)
                     txChan = tx;
+                    txNoisy = txChan;
                 else
                     txChan = filter(chan,1,tx);  % Apply the channel.
-                    txNoisy = awgn(txChan,SNR_Vec(j)); % Add AWGN
+                    txNoisy = awgn(txChan,SNR_Vec(jj)); % Add AWGN
                     
                     %equalizer
                     %lineq = comm.LinearEqualizer('Algorithm','LMS', 'NumTaps',6,'StepSize',0.01);
@@ -57,21 +59,25 @@ for m_ary=M
                     reset(eq1);
                 end
             else
-                txNoisy = awgn(tx, SNR_Vec(j) + 10*log10(log2(m_ary)),'measured');
+                txNoisy = awgn(tx + (eps*1j), SNR_Vec(jj) + 10*log10(log2(m_ary)),'measured');
+                %channel = comm.AWGNChannel('NoiseMethod', ...
+                %    'Signal to noise ratio (SNR)', 'SNR', SNR_Vec(jj));
+                %txNoisy = channel(tx);
             end
-            rx = qamdemod(txNoisy,m_ary,'OutputType', 'integer'); % Demodulate
-            
+            rx = qamdemod(txNoisy,m_ary); %,'OutputType', 'integer'); % Demodulate
+            %rxMSG = de2bi(rx, [], 2);
             
             % Again, if M was a larger number, I'd need to convert my symbols
             % back to bits here - convert each row to its binary sequence
             % the transpose and the rx(:) is housekeeping - conceptually we are
             % taking each row, appending it after the previous row, but we do
             % this transposed since we are working with columns
-            rx = de2bi(rx, 'left-msb').'; %transpose here 
-            rxMSG = rx(:);
+            rxTmp = de2bi(rx, 'left-msb').'; %transpose here 
+            rxMSG = rxTmp(:);
             
             % Compute and store the BER for this iteration
-            [~, berVec(i,j)] = biterr(bits, rxMSG);  % We're interested in the BER, which is the 2nd output of BITERR
+            % We're interested in the BER, which is the 2nd output of BITERR
+            [~, berVec(ii,jj)] = biterr(bits(trainlen+1:end), rxMSG(trainlen+1:end));  
 
         end  % End SNR iteration
     end      % End numIter iteration
