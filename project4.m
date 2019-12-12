@@ -3,12 +3,12 @@ clear all;clc; close all
 % For the final version of this project, you must use these 3
 % parameter. You will likely want to set numIter to 1 while you debug your
 % link, and then increase it to get an average BER.
-numIter = 10;  % The number of iterations of the simulation
+numIter = 100;  % The number of iterations of the simulation
 nSym = 1000;    % The number of symbols per packet
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
 trainlen = 100;
-M = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
+M_values = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
 %M = 4;
 chan = 1;          % No channel
 %%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI
@@ -17,7 +17,10 @@ chan = 1;          % No channel
 % Create a vector to store the BER computed during each iteration
 
 
-for m_ary=M
+displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
+
+for it=1:length(M_values)
+    m_ary = M_values(it);
     berVec = zeros(numIter, lenSNR);
     for ii = 1:numIter
 
@@ -85,15 +88,27 @@ for m_ary=M
     % Compute and plot the mean BER
     ber = mean(berVec,1);
     
-    semilogy(SNR_Vec, ber)
+    figure;
+    semilogy(SNR_Vec, ber, 'DisplayName', displayStr(it))
     hold on;
-end
     
-% Compute the theoretical BER for this scenario
-berTheory = berawgn(SNR_Vec,'qam',16,'nondiff');
-hold on
-semilogy(SNR_Vec,berTheory,'r')
-legend('BER-2 with ISI', 'BER-4 No ISI', 'BER-16 No ISI', 'Theoretical BER', 'Location', 'southwest')
+    if m_ary == 2
+        berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
+        semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
+        legend('Location', 'southwest')
+    elseif m_ary == 4
+        berTheory4 = berawgn(SNR_Vec,'qam', 4,'nondiff');
+        semilogy(SNR_Vec,berTheory4,'DisplayName', 'Theoretical BER for M=4')
+        legend('Location', 'southwest')
+    elseif m_ary == 16
+        berTheory16 = berawgn(SNR_Vec,'qam', 16,'nondiff');
+        semilogy(SNR_Vec,berTheory16, 'DisplayName', 'Theoretical BER for M=16');
+        legend('Location', 'southwest')
+    end
+       
+    
+end
+
 
 function retval = convBits(t)
     t(t < 0) = 0;
