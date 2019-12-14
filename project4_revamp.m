@@ -1,29 +1,29 @@
 clear all; clc; close all;
 
-numIterations = 1000;  % The number of iterations of the simulation
+numIterations = 10000;  % The number of iterations of the simulation
 numSymbols = 1000;
-numTraining = 300;
+numTraining = 310;
 m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
 
 SNR_Vec = 0:2:16;
 SNRlen = length(SNR_Vec);
 
 chan = [1, 0.2, 0.4];
-
+tic;
 M = 2;
-codeWordLen = 15;
-msgLen = 7;
+codeWordLen = 31;
+msgLen = 6;
 numWords = ceil(numSymbols/codeWordLen);
 trainingBits = (numTraining/codeWordLen) * msgLen; % should always be int. Error check?
 
 BERvec2 = zeros(numIterations, SNRlen);
-for ii=1:numIterations
+parfor ii=1:numIterations
     %generate numSymbols number of symbols: this is our message, not
     %necessarily in binary
     msg = randi([0, M-1], msgLen * numWords, 1);
     
     %encode some stuffs
-    msg_enc = encodeMsg(msg);
+    msg_enc = encodeMsg(msg, codeWordLen, msgLen);
     
     for jj=1:SNRlen
         tx = qammod(msg_enc, M);
@@ -55,7 +55,7 @@ for ii=1:numIterations
         
         % #tb/15 = #sets
         % (#tb % 15) - 8 = # of extra. If negative, set 0
-        dec_msg = decodeMsg(rx);
+        dec_msg = decodeMsg(rx, codeWordLen, msgLen);
         
         [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
     end
@@ -69,17 +69,17 @@ hold on;
 berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
 semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
 legend('Location', 'southwest')
-
+toc
 %% 4 and 16
 
 
 
 %%
-function ret_vect = encodeMsg(bits)
-%This function encodes using BCH 15-7
+function ret_vect = encodeMsg(bits, N, K)
+%This function encodes using BCH
 
-    N = 15;                  %codeword length     
-    K = 7;                   %message length
+    % N is the codeword length     
+    % K is message length
     numBits = size(bits,1);  
 
     %obtain gf form of blocks of 7 bit messages
@@ -97,9 +97,9 @@ end
 
 % demodulated matrix comes in column-wise (codewords along the columns)
 
-function decoded = decodeMsg(demodulated)
-    N = 15;                  %codeword length     
-    K = 7;                   %message length
+function decoded = decodeMsg(demodulated, N, K)
+    % N is the codeword length     
+    % K is message length
     numBits = size(demodulated,1);  
 
     %obtain gf form of blocks of 7 bit messages
@@ -107,7 +107,7 @@ function decoded = decodeMsg(demodulated)
     
     gfed = transpose(gf_bits);  % "G-F-ed" = convert to GF array
            % transpose to make it row-wise b/c bchdec acts on rows
-    decoded = bchdec(gfed,15,7);
+    decoded = bchdec(gfed,N,K);
     decoded = decoded.x;
     decoded = decoded.';
     decoded = decoded(:);
