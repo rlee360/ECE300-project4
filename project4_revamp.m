@@ -2,7 +2,7 @@ clear all; clc; close all;
 
 numIterations = 10000;  % The number of iterations of the simulation
 numSymbols = 1000;
-numTraining = 310;
+numTraining = 150;
 m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
 
 SNR_Vec = 0:2:16;
@@ -11,19 +11,25 @@ SNRlen = length(SNR_Vec);
 chan = [1, 0.2, 0.4];
 tic;
 M = 2;
-codeWordLen = 31;
-msgLen = 6;
+codeWordLen = 15;
+msgLen = 7;
 numWords = ceil(numSymbols/codeWordLen);
 trainingBits = (numTraining/codeWordLen) * msgLen; % should always be int. Error check?
 
 BERvec2 = zeros(numIterations, SNRlen);
+
+enc = comm.BCHEncoder(codeWordLen, msgLen);
+dec = comm.BCHDecoder(codeWordLen, msgLen);
+
 parfor ii=1:numIterations
     %generate numSymbols number of symbols: this is our message, not
     %necessarily in binary
     msg = randi([0, M-1], msgLen * numWords, 1);
     
     %encode some stuffs
-    msg_enc = encodeMsg(msg, codeWordLen, msgLen);
+
+    msg_enc = step(enc, msg);
+    %msg_enc = encodeMsg(msg, codeWordLen, msgLen);
     
     for jj=1:SNRlen
         tx = qammod(msg_enc, M);
@@ -55,7 +61,8 @@ parfor ii=1:numIterations
         
         % #tb/15 = #sets
         % (#tb % 15) - 8 = # of extra. If negative, set 0
-        dec_msg = decodeMsg(rx, codeWordLen, msgLen);
+        %dec_msg = decodeMsg(rx, codeWordLen, msgLen);
+        dec_msg = step(dec, rx);
         
         [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
     end
