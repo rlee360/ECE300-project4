@@ -3,7 +3,7 @@ clear all;clc; close all
 % For the final version of this project, you must use these 3
 % parameter. You will likely want to set numIter to 1 while you debug your
 % link, and then increase it to get an average BER.
-numIter = 10000;  % The number of iterations of the simulation
+numIter = 1000;  % The number of iterations of the simulation
 nSym = 1000;    % The number of symbols per packet
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
@@ -20,7 +20,7 @@ chan = [1, 0.2, 0.4];
 
 displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
 
-parfor it=1:length(m_ary)
+for it=1:length(m_ary)
     M = m_ary(it);
     berVec = zeros(numIter, lenSNR);
     for ii = 1:numIter
@@ -89,7 +89,7 @@ parfor it=1:length(m_ary)
     % Compute and plot the mean BER
     ber = mean(berVec,1);
     
-    figure;
+    figure(it);
     semilogy(SNR_Vec, ber, 'DisplayName', displayStr(it))
     hold on;
     
