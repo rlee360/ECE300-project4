@@ -20,7 +20,7 @@ chan = [1, 0.2, 0.4];
 
 displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
 
-for it=1:length(m_ary)
+parfor it=1:length(m_ary)
     M = m_ary(it);
     berVec = zeros(numIter, lenSNR);
     for ii = 1:numIter
