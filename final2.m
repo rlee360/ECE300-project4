@@ -60,7 +60,7 @@ for it=1:length(m_ary)
                     eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);
                     eq1.ResetBeforeFiltering = 1;
             
-                    txNoisy = equalize(eq1,txNoisy,tx(1:numTraining)); % Equalize.
+                    txNoisy = equalize(eq1,txNoisy,tx(1:trainlen)); % Equalize.
            
                 end
             else
