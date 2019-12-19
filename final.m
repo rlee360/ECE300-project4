@@ -188,6 +188,9 @@ end
 
 ber2 = mean(BERvec2,1);
 
+% grab last non zero value
+ber2(find(ber2,1,'last'))
+
 figure;
 semilogy(SNR_Vec, ber2, 'DisplayName', "BER-2 with ISI")
 hold on;
