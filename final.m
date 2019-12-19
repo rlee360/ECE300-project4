@@ -1,5 +1,8 @@
 % A skeleton BER script for a wireless link simulation
 clear all;clc; close all
+
+%% part a
+
 % For the final version of this project, you must use these 3
 % parameter. You will likely want to set numIter to 1 while you debug your
 % link, and then increase it to get an average BER.
@@ -12,11 +15,6 @@ m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulatio
 %chan = 1;          % No channel
 chan = [1, 0.2, 0.4];
 %%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI
-
-
-%% part a
-
-% part a depends on the first section. Run that before running this.
 
 tic;
 
@@ -117,12 +115,19 @@ fprintf('Part A: ');
 toc
 
 %% part b
-% part b depends on the first secion (before part a)
 
 tic;
-% here we use 150 bits
-trainlen = 150;
 
+numIterations = 10000;  % The number of iterations of the simulation
+numSymbols = 1000;
+numTraining = 150;
+m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
+
+SNR_Vec = 0:2:16;
+SNRlen = length(SNR_Vec);
+
+chan = [1, 0.2, 0.4];
+tic;
 M = 2;
 codeWordLen = 15;
 msgLen = 7;
@@ -133,6 +138,7 @@ BERvec2 = zeros(numIterations, SNRlen);
 
 enc = comm.BCHEncoder(codeWordLen, msgLen);
 dec = comm.BCHDecoder(codeWordLen, msgLen);
+
 
 parfor ii=1:numIterations
     %generate numSymbols number of symbols: this is our message, not
