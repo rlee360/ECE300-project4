@@ -18,7 +18,9 @@ chan = [1, 0.2, 0.4];
 
 % part a depends on the first section. Run that before running this.
 
-% we use 300 training bits in this case
+tic;
+
+%we use 300 training bits in this case
 trainlen = 300;
 displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
 
@@ -111,13 +113,16 @@ for it=1:length(m_ary)
          
 end
 
+fprintf('Part A: ');
+toc
+
 %% part b
 % part b depends on the first secion (before part a)
 
+tic;
 % here we use 150 bits
 trainlen = 150;
 
-tic;
 M = 2;
 codeWordLen = 15;
 msgLen = 7;
@@ -184,4 +189,5 @@ hold on;
 berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
 semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
 legend('Location', 'southwest')
+fprintf('Part B: ');
 toc
