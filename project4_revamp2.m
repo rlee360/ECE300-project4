@@ -12,7 +12,7 @@ chan = [1, 0.2, 0.4];
 
 
 tic;
-M = 16;
+M = 4;
 codeWordLen = 15;
 msgLen = 7;
 numWords = ceil(numSymbols/codeWordLen);
@@ -22,7 +22,7 @@ BERvec2 = zeros(numIterations, SNRlen);
 
 enc = comm.BCHEncoder(codeWordLen, msgLen);
 dec = comm.BCHDecoder(codeWordLen, msgLen);
-refconst = qammod(0:15,16);
+refconst = qammod(0:M-1,M);
 nf = modnorm(refconst,'peakpow',1);
 
 parfor ii=1:numIterations
@@ -30,9 +30,12 @@ parfor ii=1:numIterations
     %necessarily in binary
     msg = randi([0, M-1], msgLen * numWords, 1);
     
+    bits = de2bi(msg, 'left-msb').'; %transpose here 
+    msg_bits = bits(:);
+    
     %encode some stuffs
 
-    msg_enc = step(enc, msg);
+    msg_enc = step(enc, msg_bits);
     %msg_enc = encodeMsg(msg, codeWordLen, msgLen);
     
     for jj=1:SNRlen
@@ -67,9 +70,12 @@ parfor ii=1:numIterations
         % #tb/15 = #sets
         % (#tb % 15) - 8 = # of extra. If negative, set 0
         %dec_msg = decodeMsg(rx, codeWordLen, msgLen);
-        dec_msg = step(dec, rx);
+        msg_dec_bits = step(dec, rx);
         
-        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
+        rxTmp = de2bi(msg_dec_bits, 'left-msb').'; %transpose here 
+        msg_dec = rxTmp(:);
+        
+        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), msg_dec(trainingBits+1:end));  
     end
 end
 
