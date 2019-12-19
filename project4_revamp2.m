@@ -10,9 +10,9 @@ SNRlen = length(SNR_Vec);
 
 chan = [1, 0.2, 0.4];
 
-%%
+
 tic;
-M = 2;
+M = 16;
 codeWordLen = 15;
 msgLen = 7;
 numWords = ceil(numSymbols/codeWordLen);
@@ -23,7 +23,7 @@ BERvec2 = zeros(numIterations, SNRlen);
 enc = comm.BCHEncoder(codeWordLen, msgLen);
 dec = comm.BCHDecoder(codeWordLen, msgLen);
 refconst = qammod(0:15,16);
-
+nf = modnorm(refconst,'peakpow',1);
 
 parfor ii=1:numIterations
     %generate numSymbols number of symbols: this is our message, not
@@ -37,7 +37,7 @@ parfor ii=1:numIterations
     
     for jj=1:SNRlen
         tx = qammod(msg_enc, M);
-        
+        tx = nf*tx;
         
         if isequal(chan, 1);
             txChan = tx; % Apply the channel
