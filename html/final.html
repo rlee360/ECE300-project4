@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>project4_revamp_parta</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-19"><meta name="DC.source" content="project4_revamp_parta.m"><style type="text/css">
+      --><title>final</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-19"><meta name="DC.source" content="final.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% A skeleton BER script for a wireless link simulation</span>
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">part a</a></li><li><a href="#3">part b</a></li></ul></div><pre class="codeinput"><span class="comment">% A skeleton BER script for a wireless link simulation</span>
 clear <span class="string">all</span>;clc; close <span class="string">all</span>
 <span class="comment">% For the final version of this project, you must use these 3</span>
 <span class="comment">% parameter. You will likely want to set numIter to 1 while you debug your</span>
@@ -75,17 +75,17 @@ numIter = 10000;  <span class="comment">% The number of iterations of the simula
 nSym = 1000;    <span class="comment">% The number of symbols per packet</span>
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
-trainlen = 300;
 m_ary = [2, 4, 16];        <span class="comment">% The M-ary number, 2 corresponds to binary modulation</span>
-<span class="comment">%M = 4;</span>
+
 <span class="comment">%chan = 1;          % No channel</span>
 chan = [1, 0.2, 0.4];
 <span class="comment">%%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI</span>
+</pre><h2 id="2">part a</h2><pre class="codeinput"><span class="comment">% part a depends on the first section. Run that before running this.</span>
 
+tic;
 
-<span class="comment">% Create a vector to store the BER computed during each iteration</span>
-
-
+<span class="comment">%we use 300 training bits in this case</span>
+trainlen = 300;
 displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">"BER-4 No ISI"</span>, <span class="string">"BER-16 No ISI"</span>];
 
 <span class="keyword">for</span> it=1:length(m_ary)
@@ -176,7 +176,85 @@ displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="project4_revamp_parta_01.png" alt=""> <img vspace="5" hspace="5" src="project4_revamp_parta_02.png" alt=""> <img vspace="5" hspace="5" src="project4_revamp_parta_03.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+
+fprintf(<span class="string">'Part A: '</span>);
+toc
+</pre><pre class="codeoutput">Part A: Elapsed time is 3730.303940 seconds.
+</pre><img vspace="5" hspace="5" src="final_01.png" alt=""> <img vspace="5" hspace="5" src="final_02.png" alt=""> <img vspace="5" hspace="5" src="final_03.png" alt=""> <h2 id="3">part b</h2><p>part b depends on the first secion (before part a)</p><pre class="codeinput">tic;
+<span class="comment">% here we use 150 bits</span>
+trainlen = 150;
+
+M = 2;
+codeWordLen = 15;
+msgLen = 7;
+numWords = ceil(numSymbols/codeWordLen);
+trainingBits = (numTraining/codeWordLen) * msgLen; <span class="comment">% should always be int. Error check?</span>
+
+BERvec2 = zeros(numIterations, SNRlen);
+
+enc = comm.BCHEncoder(codeWordLen, msgLen);
+dec = comm.BCHDecoder(codeWordLen, msgLen);
+
+<span class="keyword">parfor</span> ii=1:numIterations
+    <span class="comment">%generate numSymbols number of symbols: this is our message, not</span>
+    <span class="comment">%necessarily in binary</span>
+    msg = randi([0, M-1], msgLen * numWords, 1);
+
+    <span class="comment">%encode some stuffs</span>
+
+    msg_enc = step(enc, msg);
+    <span class="comment">%msg_enc = encodeMsg(msg, codeWordLen, msgLen);</span>
+
+    <span class="keyword">for</span> jj=1:SNRlen
+        tx = qammod(msg_enc, M);
+
+        <span class="keyword">if</span> isequal(chan, 1);
+            txChan = tx; <span class="comment">% Apply the channel</span>
+            txNoisy = txChan; <span class="comment">% "add noise"</span>
+        <span class="keyword">else</span>
+            txChan = filter(chan,1,tx);  <span class="comment">% Apply the channel.</span>
+            txNoisy = awgn(txChan,SNR_Vec(jj)); <span class="comment">% add noise</span>
+
+            <span class="comment">%make the eq</span>
+            <span class="comment">%Some previous attempts</span>
+                <span class="comment">%lineq = comm.LinearEqualizer('Algorithm','LMS', 'NumTaps',6,'StepSize',0.01); % doesn't work on matlab 2018a</span>
+                <span class="comment">%eq1 = lineareq(6, lms(0.001));</span>
+                <span class="comment">%txNoisy = filter(eq1.weights, 1, txNoisy);</span>
+            eq1 = dfe(12,6, lms(0.01));
+            eq1.SigConst = qammod(0:M-1, M, <span class="string">'UnitAveragePower'</span>, true);
+            eq1.ResetBeforeFiltering = 0;
+
+            txNoisy = equalize(eq1,txNoisy,tx(1:numTraining)); <span class="comment">% Equalize.</span>
+
+            reset(eq1); <span class="comment">% clean up - to be removed?</span>
+        <span class="keyword">end</span>
+
+        rx = qamdemod(txNoisy, M);
+        <span class="comment">%rxTmp = de2bi(rx, 'left-msb').'; %transpose here</span>
+        <span class="comment">%rxMsg = rxTmp(:);</span>
+
+        <span class="comment">% #tb/15 = #sets</span>
+        <span class="comment">% (#tb % 15) - 8 = # of extra. If negative, set 0</span>
+        <span class="comment">%dec_msg = decodeMsg(rx, codeWordLen, msgLen);</span>
+        dec_msg = step(dec, rx);
+
+        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+ber2 = mean(BERvec2,1);
+
+figure;
+semilogy(SNR_Vec, ber2, <span class="string">'DisplayName'</span>, <span class="string">"BER-2 with ISI"</span>)
+hold <span class="string">on</span>;
+berTheory2 = berawgn(SNR_Vec,<span class="string">'psk'</span>, 2,<span class="string">'nondiff'</span>);
+semilogy(SNR_Vec,berTheory2,<span class="string">'DisplayName'</span>, <span class="string">'Theoretical BER for M=2'</span>)
+legend(<span class="string">'Location'</span>, <span class="string">'southwest'</span>)
+fprintf(<span class="string">'Part B: '</span>);
+toc
+</pre><pre class="codeoutput error">Unrecognized function or variable 'numSymbols'.
+Error in final (line 129)
+numWords = ceil(numSymbols/codeWordLen);</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % A skeleton BER script for a wireless link simulation
 clear all;clc; close all
@@ -187,17 +265,21 @@ numIter = 10000;  % The number of iterations of the simulation
 nSym = 1000;    % The number of symbols per packet
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
-trainlen = 300;
 m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
-%M = 4;
+
 %chan = 1;          % No channel
 chan = [1, 0.2, 0.4];
 %%chan = [0.227 0.460 0.688 0.460 0.227]';   % Not so invertible, severe ISI
 
 
-% Create a vector to store the BER computed during each iteration
+%% part a
 
+% part a depends on the first section. Run that before running this.
 
+tic;
+
+%we use 300 training bits in this case
+trainlen = 300;
 displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
 
 for it=1:length(m_ary)
@@ -289,5 +371,83 @@ for it=1:length(m_ary)
          
 end
 
+fprintf('Part A: ');
+toc
+
+%% part b
+% part b depends on the first secion (before part a)
+
+tic;
+% here we use 150 bits
+trainlen = 150;
+
+M = 2;
+codeWordLen = 15;
+msgLen = 7;
+numWords = ceil(numSymbols/codeWordLen);
+trainingBits = (numTraining/codeWordLen) * msgLen; % should always be int. Error check?
+
+BERvec2 = zeros(numIterations, SNRlen);
+
+enc = comm.BCHEncoder(codeWordLen, msgLen);
+dec = comm.BCHDecoder(codeWordLen, msgLen);
+
+parfor ii=1:numIterations
+    %generate numSymbols number of symbols: this is our message, not
+    %necessarily in binary
+    msg = randi([0, M-1], msgLen * numWords, 1);
+    
+    %encode some stuffs
+
+    msg_enc = step(enc, msg);
+    %msg_enc = encodeMsg(msg, codeWordLen, msgLen);
+    
+    for jj=1:SNRlen
+        tx = qammod(msg_enc, M);
+        
+        if isequal(chan, 1);
+            txChan = tx; % Apply the channel
+            txNoisy = txChan; % "add noise"
+        else
+            txChan = filter(chan,1,tx);  % Apply the channel.
+            txNoisy = awgn(txChan,SNR_Vec(jj)); % add noise
+            
+            %make the eq
+            %Some previous attempts
+                %lineq = comm.LinearEqualizer('Algorithm','LMS', 'NumTaps',6,'StepSize',0.01); % doesn't work on matlab 2018a
+                %eq1 = lineareq(6, lms(0.001));
+                %txNoisy = filter(eq1.weights, 1, txNoisy);
+            eq1 = dfe(12,6, lms(0.01)); 
+            eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);
+            eq1.ResetBeforeFiltering = 0;
+            
+            txNoisy = equalize(eq1,txNoisy,tx(1:numTraining)); % Equalize.
+             
+            reset(eq1); % clean up - to be removed?
+        end
+        
+        rx = qamdemod(txNoisy, M);
+        %rxTmp = de2bi(rx, 'left-msb').'; %transpose here 
+        %rxMsg = rxTmp(:);
+        
+        % #tb/15 = #sets
+        % (#tb % 15) - 8 = # of extra. If negative, set 0
+        %dec_msg = decodeMsg(rx, codeWordLen, msgLen);
+        dec_msg = step(dec, rx);
+        
+        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
+    end
+end
+
+ber2 = mean(BERvec2,1);
+
+figure;
+semilogy(SNR_Vec, ber2, 'DisplayName', "BER-2 with ISI")
+hold on;
+berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
+semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
+legend('Location', 'southwest')
+fprintf('Part B: ');
+toc
 ##### SOURCE END #####
 --></body></html>
