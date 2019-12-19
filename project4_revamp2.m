@@ -1,6 +1,6 @@
 clear all; clc; close all;
 
-numIterations = 100;  % The number of iterations of the simulation
+numIterations = 10000;  % The number of iterations of the simulation
 numSymbols = 1000;
 numTraining = 150;
 m_ary = [2, 4, 16];        % The M-ary number, 2 corresponds to binary modulation
@@ -9,8 +9,6 @@ SNR_Vec = 0:2:16;
 SNRlen = length(SNR_Vec);
 
 chan = [1, 0.2, 0.4];
-
-
 
 %%
 tic;
