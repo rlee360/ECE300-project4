@@ -1,0 +1,928 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>final_clean</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-25"><meta name="DC.source" content="final_clean.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">part a</a></li><li><a href="#3">part b with BPSK 1/2 Convolutional Encoding</a></li><li><a href="#4">BPSK with BCH 15-7 encoding</a></li><li><a href="#5">QAM with BCH 15-7</a></li></ul></div><pre class="codeinput"><span class="comment">% Matt Kribs, Richard Lee, Lucy Xu</span>
+<span class="comment">% Comm Theory Final Project</span>
+<span class="comment">% Description: A BER script for a wireless link simulation</span>
+</pre><h2 id="2">part a</h2><pre class="codeinput">clear <span class="string">all</span>;clc;close <span class="string">all</span>
+
+<span class="comment">%This section has two parts to it. The first part is matching AWGN</span>
+<span class="comment">%performance for M-ary QAM schemes for M = 4 and 16. The second part to</span>
+<span class="comment">%this section is to obtain a BER of 10e-4 using BPSK (M=2) after the message</span>
+<span class="comment">%bits have been modulated, channeled, added to awgn, equalized, and demodulated.</span>
+
+numIter = 10000;              <span class="comment">% number of iterations of the simulation</span>
+nSym = 1000;                <span class="comment">% number of symbols per packet</span>
+SNR_Vec = 0:2:16;           <span class="comment">% SNR value for the awgn function</span>
+lenSNR = length(SNR_Vec);
+m_ary = [2, 4, 16];         <span class="comment">% M-ary number, 2 corresponds to binary modulation</span>
+<span class="comment">%chan = 1;                  % No channel</span>
+chan = [1, 0.2, 0.4];       <span class="comment">% moderate ISI</span>
+
+<span class="comment">% Not so invertible, severe ISI, we did not use this channel for any part</span>
+<span class="comment">% of this project</span>
+<span class="comment">%chan = [0.227 0.460 0.688 0.460 0.227]';</span>
+
+tic;
+trainlen = 300;             <span class="comment">% number of training bits</span>
+displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">"BER-4 No ISI"</span>, <span class="string">"BER-16 No ISI"</span>]; <span class="comment">% plot labels</span>
+
+<span class="keyword">for</span> it=1:length(m_ary)
+    M = m_ary(it);
+
+    berVec = zeros(numIter, lenSNR);    <span class="comment">% preallocate BER matrix</span>
+
+    <span class="keyword">parfor</span> ii = 1:numIter
+        <span class="comment">% we generate a random decimal message everytime</span>
+        msg = randi([0, M-1], nSym*(log2(M)), 1);
+
+        <span class="comment">% we turn the msg into bits here</span>
+        <span class="comment">% the transpose is so we can columnize</span>
+        <span class="comment">% we use bits to for the biterr func, but do not transmit this</span>
+        bits = de2bi(msg, <span class="string">'left-msb'</span>).';
+        bits = bits(:);
+
+        <span class="keyword">for</span> jj = 1:lenSNR        <span class="comment">% one iteration of the simulation at each SNR Value</span>
+            tx = qammod(msg,M);  <span class="comment">% modulate the msg</span>
+
+            <span class="comment">% for 2-ary we filter, add awgn, and equalize</span>
+            <span class="keyword">if</span> M == 2
+
+                <span class="comment">% if there is no channel then the received msg is the same</span>
+                <span class="comment">% as the transmitted msg</span>
+                <span class="keyword">if</span> isequal(chan,1)
+                    txChan = tx;
+                    txNoisy = txChan;
+                <span class="keyword">else</span>
+                    txChan = filter(chan,1,tx);         <span class="comment">% apply the channel</span>
+                    txNoisy = awgn(txChan,SNR_Vec(jj)); <span class="comment">% add AWGN</span>
+
+                    <span class="comment">% Originally we tried the linear equalizer but could</span>
+                    <span class="comment">% not get it down enough, so we switched to dfe</span>
+
+                    <span class="comment">% lineq = comm.LinearEqualizer('Algorithm','LMS', 'NumTaps',6,'StepSize',0.01);</span>
+                    <span class="comment">% doesn't work on matlab 2018a</span>
+
+                    <span class="comment">% we also started off with simply feedforward taps but</span>
+                    <span class="comment">% it did not work well enough so we used feedback taps</span>
+                    <span class="comment">% as well</span>
+                    <span class="comment">% eq1 = lineareq(6, lms(0.01));</span>
+
+                    eq1 = dfe(12,6, lms(0.01));
+                    eq1.SigConst = qammod(0:M-1, M, <span class="string">'UnitAveragePower'</span>, true);
+                    eq1.ResetBeforeFiltering = 1;
+
+                    txNoisy = equalize(eq1,txNoisy,tx(1:trainlen)); <span class="comment">% equalize</span>
+                <span class="keyword">end</span>
+
+            <span class="comment">% if we are 4-ary or 16-ary we only add awgn</span>
+            <span class="keyword">else</span>
+                txNoisy = awgn(tx, SNR_Vec(jj) + 10*log10(log2(M)),<span class="string">'measured'</span>);
+            <span class="keyword">end</span>
+
+            rx = qamdemod(txNoisy,M); <span class="comment">% demodulate the signal</span>
+
+            <span class="comment">% Convert the received message to bits</span>
+            <span class="comment">% the transpose and the rx(:) is housekeeping - conceptually we are</span>
+            <span class="comment">% taking each row, appending it after the previous row, but we do</span>
+            <span class="comment">% this transposed since we are working with columns</span>
+            rxTmp = de2bi(rx, <span class="string">'left-msb'</span>).';
+            rxBits = rxTmp(:);
+
+            <span class="comment">% Compute and store the BER for this iteration</span>
+            <span class="comment">% We're interested in the BER, which is the 2nd output of BITERR</span>
+            [~, berVec(ii,jj)] = biterr(bits(trainlen+1:end), rxBits(trainlen+1:end));
+
+        <span class="keyword">end</span>  <span class="comment">% End SNR iteration</span>
+    <span class="keyword">end</span>      <span class="comment">% End numIter iteration</span>
+
+    <span class="comment">% Compute and plot the mean BER</span>
+    ber = mean(berVec,1);
+
+    <span class="comment">% print the BER at SNR = 12 for 2-ary</span>
+    <span class="keyword">if</span> M == 2
+        BER_at_12 = ber(7)
+    <span class="keyword">end</span>
+
+    <span class="comment">% here we plot the figures</span>
+    figure(it);
+    semilogy(SNR_Vec, ber, <span class="string">'DisplayName'</span>, displayStr(it))
+    hold <span class="string">on</span>;
+
+    <span class="comment">% plot different theoreticals depending on M</span>
+    <span class="keyword">if</span> M == 2
+        berTheory2 = berawgn(SNR_Vec,<span class="string">'psk'</span>, 2,<span class="string">'nondiff'</span>);
+        semilogy(SNR_Vec,berTheory2,<span class="string">'DisplayName'</span>, <span class="string">'Theoretical BER for M=2'</span>)
+    <span class="keyword">elseif</span> M == 4
+        berTheory4 = berawgn(SNR_Vec,<span class="string">'qam'</span>, 4,<span class="string">'nondiff'</span>);
+        semilogy(SNR_Vec,berTheory4,<span class="string">'DisplayName'</span>, <span class="string">'Theoretical BER for M=4'</span>)
+    <span class="keyword">elseif</span> M == 16
+        berTheory16 = berawgn(SNR_Vec,<span class="string">'qam'</span>, 16,<span class="string">'nondiff'</span>);
+        semilogy(SNR_Vec,berTheory16, <span class="string">'DisplayName'</span>, <span class="string">'Theoretical BER for M=16'</span>);
+    <span class="keyword">end</span>
+
+    legend(<span class="string">'Location'</span>, <span class="string">'southwest'</span>)
+    title(<span class="string">'Part A'</span>);
+    xlabel(<span class="string">'SNR in dB'</span>);
+    ylabel(<span class="string">'Bit Error Rate'</span>);
+
+<span class="keyword">end</span>
+fprintf(<span class="string">'Part A: '</span>);
+toc
+</pre><pre class="codeoutput">Starting parallel pool (parpool) using the 'local' profile ...
+Connected to the parallel pool (number of workers: 8).
+BER_at_12 =
+   1.2571e-04
+Part A: Elapsed time is 564.586043 seconds.
+</pre><img vspace="5" hspace="5" src="final_clean_01.png" alt=""> <img vspace="5" hspace="5" src="final_clean_02.png" alt=""> <img vspace="5" hspace="5" src="final_clean_03.png" alt=""> <h2 id="3">part b with BPSK 1/2 Convolutional Encoding</h2><pre class="codeinput"><span class="comment">% In this part, an encoding scheme will be added to the system to improve</span>
+<span class="comment">% the BER to 10e-6</span>
+
+<span class="comment">% BPSK with 1/2 convolutional encoding</span>
+clear <span class="string">all</span>;clc;close <span class="string">all</span>
+
+<span class="comment">% we initially tried 1/2 convolutional encoding since its less tedious to</span>
+<span class="comment">% implement than block codes but this proved to not be enough so please</span>
+<span class="comment">% find our trials with BCH</span>
+
+<span class="comment">% numIter = 0;</span>
+<span class="comment">% nSym = 500;</span>
+<span class="comment">% SNR_Vec = 0:2:16;</span>
+<span class="comment">% lenSNR = length(SNR_Vec);</span>
+<span class="comment">% trainlen = 300;</span>
+<span class="comment">% M_values = 2;</span>
+<span class="comment">% chan = [1, 0.2, 0.4];</span>
+<span class="comment">%</span>
+<span class="comment">% displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];</span>
+<span class="comment">%</span>
+<span class="comment">% tic;</span>
+<span class="comment">% for it=1:length(M_values)</span>
+<span class="comment">%     m_ary = M_values(it);</span>
+<span class="comment">%     berVec = zeros(numIter, lenSNR);</span>
+<span class="comment">%     for ii = 1:numIter</span>
+<span class="comment">%</span>
+<span class="comment">%         msg = randi([0, m_ary-1], nSym*(log2(m_ary)), 1);</span>
+<span class="comment">%         numBits = size(msg,1);</span>
+<span class="comment">%         % New bits must be generated at every iteration</span>
+<span class="comment">%</span>
+<span class="comment">%         %encoding 1/2 convolutional</span>
+<span class="comment">%         K = 3;                %constraint length is how long a bit can affect the encoder output</span>
+<span class="comment">%         g_1 = '1+x+x^2';</span>
+<span class="comment">%         g_2 = '1+x^2';</span>
+<span class="comment">%         trellis = poly2trellis(K,{g_1,g_2});    %trellis is created</span>
+<span class="comment">%         msg_enc = convenc(msg,trellis);         %input bits are encoded</span>
+<span class="comment">%</span>
+<span class="comment">%         bits = de2bi(msg_enc, 'left-msb').'; %transpose here</span>
+<span class="comment">%         bits = bits(:);</span>
+<span class="comment">%</span>
+<span class="comment">%         for jj = 1:lenSNR               % one iteration of the simulation at each SNR Value</span>
+<span class="comment">%             tx = qammod(msg_enc,m_ary); % BPSK modulate the signal</span>
+<span class="comment">%</span>
+<span class="comment">%             m_ary == 2</span>
+<span class="comment">%                 txChan = filter(chan,1,tx);         % apply the channel</span>
+<span class="comment">%                 txNoisy = awgn(txChan,SNR_Vec(jj)); % add AWGN</span>
+<span class="comment">%</span>
+<span class="comment">%                 sigConst = qammod(0:m_ary-1, m_ary, 'UnitAveragePower', true);</span>
+<span class="comment">%                 eq1 = dfe(12,6,lms(0.01));</span>
+<span class="comment">%                 eq1.SigConst = sigConst;</span>
+<span class="comment">%                 eq1.ResetBeforeFiltering = 0;</span>
+<span class="comment">%</span>
+<span class="comment">%                 txNoisy = equalize(eq1,txNoisy,tx(1:trainlen)); % equalize</span>
+<span class="comment">%                 reset(eq1);</span>
+<span class="comment">%</span>
+<span class="comment">%                 rx = qamdemod(txNoisy,m_ary); %,'OutputType', 'integer'); % Demodulate</span>
+<span class="comment">%                 rxTmp = de2bi(rx, 'left-msb').';</span>
+<span class="comment">%</span>
+<span class="comment">%             tblen = (K - 1)*5;   %positive integer scalar that specifies the traceback depth</span>
+<span class="comment">%                                  %for rate 1/2, a typical value for tblen is about</span>
+<span class="comment">%                                  %five times the constraint length - 1</span>
+<span class="comment">%</span>
+<span class="comment">%             rxMSG = (vitdec(rxTmp,trellis,tblen,'trunc','hard')).';</span>
+<span class="comment">%             %trunc: encoder is assumed to have started at the all zero state</span>
+<span class="comment">%             %hard: code contains binary input values</span>
+<span class="comment">%</span>
+<span class="comment">%             % Compute and store the BER for this iteration</span>
+<span class="comment">%             % We're interested in the BER, which is the 2nd output of BITERR</span>
+<span class="comment">%</span>
+<span class="comment">%             [~, berVec(ii,jj)] = biterr(msg(trainlen+1:end), rxMSG(trainlen+1:end));</span>
+<span class="comment">%</span>
+<span class="comment">%         end  % End SNR iteration</span>
+<span class="comment">%     end      % End numIter iteration</span>
+<span class="comment">% end</span>
+
+<span class="comment">% % Compute and plot the mean BER</span>
+<span class="comment">%ber = mean(berVec,1);</span>
+
+<span class="comment">% grab last non zero value and report on screen</span>
+<span class="comment">%lowest_non_zero_BER = ber(find(ber,1,'last'))</span>
+
+<span class="comment">% % calculate bit rate</span>
+<span class="comment">% bit_rate = (numBits - trainlen)/numBits</span>
+
+<span class="comment">% % plot the figure</span>
+<span class="comment">% figure('Name', 'Part B');</span>
+<span class="comment">% semilogy(SNR_Vec, ber, 'DisplayName', "BER-2 with ISI")</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');</span>
+<span class="comment">% semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')</span>
+<span class="comment">% legend('Location', 'southwest')</span>
+<span class="comment">% title('Reducing Error to 10e-6 for BPSK');</span>
+<span class="comment">% xlabel('SNR in dB');</span>
+<span class="comment">% ylabel('Bit Error Rate');</span>
+<span class="comment">% fprintf('Part B: ');</span>
+<span class="comment">% toc</span>
+</pre><h2 id="4">BPSK with BCH 15-7 encoding</h2><pre class="codeinput"><span class="comment">%clc;clear;close all</span>
+<span class="comment">%</span>
+<span class="comment">% % We thought that we had to stick to BPSK (2-ary) so we have this section</span>
+<span class="comment">% % where we used BCH 15-7 encoding on 2-ary but after we realized we could</span>
+<span class="comment">% % have used QAM, we tried that out in the next section</span>
+<span class="comment">%</span>
+<span class="comment">% numIterations = 1;</span>
+<span class="comment">% numSymbols = 1000;</span>
+<span class="comment">%</span>
+<span class="comment">% % We are allowed roughly 1000 symbols: we use this to find roughly how many words</span>
+<span class="comment">% % we can generate for BCH 15-7</span>
+<span class="comment">% % we use a ceiling function below to calculate precisely how many codewords</span>
+<span class="comment">% % we can send</span>
+<span class="comment">%</span>
+<span class="comment">% % fter encoding, the number of total bits (including parity) that we use for training</span>
+<span class="comment">% numTraining = 150;</span>
+<span class="comment">%</span>
+<span class="comment">% SNR_Vec = 0:2:16;</span>
+<span class="comment">% SNRlen = length(SNR_Vec);</span>
+<span class="comment">%</span>
+<span class="comment">% % same channel, Moderate ISI</span>
+<span class="comment">% chan = [1, 0.2, 0.4];</span>
+<span class="comment">%</span>
+<span class="comment">% tic;</span>
+<span class="comment">%</span>
+<span class="comment">% M = 2;</span>
+<span class="comment">% codeWordLen = 15;</span>
+<span class="comment">% msgLen = 7;</span>
+<span class="comment">%</span>
+<span class="comment">% % the ceiling is to round up the number of words</span>
+<span class="comment">%</span>
+<span class="comment">% % later, we use num words * msgLen to figure out how many bits we can</span>
+<span class="comment">% % generate, knowing that encoding will add 8 parity bits to each symbol</span>
+<span class="comment">% numWords = ceil(numSymbols/codeWordLen);</span>
+<span class="comment">%</span>
+<span class="comment">% % number of training bits that we had to take from the original message</span>
+<span class="comment">% trainingBits = (numTraining/codeWordLen) * msgLen;</span>
+<span class="comment">%</span>
+<span class="comment">% % make a 0 vector</span>
+<span class="comment">% BERvec2 = zeros(numIterations, SNRlen);</span>
+<span class="comment">%</span>
+<span class="comment">% % We use the comm BCH encoder and decoder objects, make them once and reuse</span>
+<span class="comment">% enc = comm.BCHEncoder(codeWordLen, msgLen);</span>
+<span class="comment">% dec = comm.BCHDecoder(codeWordLen, msgLen);</span>
+<span class="comment">%</span>
+<span class="comment">% for ii=1:numIterations</span>
+<span class="comment">%     % make a msg that is number of msg bits long, such that after encoding,</span>
+<span class="comment">%     % there are approximately 100- symbols transmitted</span>
+<span class="comment">%     msg = randi([0, M-1], msgLen * numWords, 1);</span>
+<span class="comment">%     numBits = size(msg,1);</span>
+<span class="comment">%</span>
+<span class="comment">%     % BCH encode it. 469 bits generated above, 1005 symbols transmitted</span>
+<span class="comment">%     msg_enc = step(enc, msg);</span>
+<span class="comment">%</span>
+<span class="comment">%     for jj=1:SNRlen</span>
+<span class="comment">%</span>
+<span class="comment">%         tx = qammod(msg_enc, M);            % modulate the signal</span>
+<span class="comment">%         txChan = filter(chan,1,tx);         % apply the channel</span>
+<span class="comment">%         txNoisy = awgn(txChan,SNR_Vec(jj)); % add AWGN</span>
+<span class="comment">%</span>
+<span class="comment">%         eq1 = dfe(12,6, lms(0.01));         % create equalizer object</span>
+<span class="comment">%         eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);</span>
+<span class="comment">%         eq1.ResetBeforeFiltering = 1;</span>
+<span class="comment">%</span>
+<span class="comment">%         txNoisy = equalize(eq1,txNoisy,tx(1:numTraining));  % equalize</span>
+<span class="comment">%         rx = qamdemod(txNoisy, M);                          % demodulate</span>
+<span class="comment">%         dec_msg = step(dec, rx);                            % decode</span>
+<span class="comment">%</span>
+<span class="comment">%         % calculate BER</span>
+<span class="comment">%         [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));</span>
+<span class="comment">%     end</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% % average BER for each SNR</span>
+<span class="comment">%ber2 = mean(BERvec2,1);</span>
+<span class="comment">%</span>
+<span class="comment">% % grab last non zero value and report on screen</span>
+<span class="comment">% lowest_non_zero_BER = ber2(find(ber2,1,'last'))</span>
+<span class="comment">%</span>
+<span class="comment">% % calculate bit rate</span>
+<span class="comment">% bit_rate = (numBits - trainingBits)/numBits</span>
+<span class="comment">%</span>
+<span class="comment">% % plot the figure</span>
+<span class="comment">% figure('Name', 'Part B');</span>
+<span class="comment">% semilogy(SNR_Vec, ber2, 'DisplayName', "BER-2 with ISI")</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');</span>
+<span class="comment">% semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')</span>
+<span class="comment">% legend('Location', 'southwest')</span>
+<span class="comment">% title('Reducing Error to 10e-6 for BPSK');</span>
+<span class="comment">% xlabel('SNR in dB');</span>
+<span class="comment">% ylabel('Bit Error Rate');</span>
+<span class="comment">% fprintf('Part B: ');</span>
+<span class="comment">% toc</span>
+</pre><h2 id="5">QAM with BCH 15-7</h2><pre class="codeinput">clc;clear;close <span class="string">all</span>
+
+<span class="comment">% QAM with 4-ary should be able to imporve the bit rate because the number</span>
+<span class="comment">% of bits per symbol is doubled</span>
+
+<span class="comment">% same parameters from part a</span>
+numIterations = 10000;
+numSym = 1000;
+SNR_Vec = 0:2:16;
+SNRlen = length(SNR_Vec);
+chan = [1, 0.2, 0.4];
+
+<span class="comment">% number of codewords*2 that is used for training</span>
+n = 60;
+<span class="comment">% number of symbols that is used for training aka number of msg bits*2</span>
+<span class="comment">% that is used for training</span>
+numTraining = 15*n;
+
+M = 4;
+codeWordLen = 15;
+msgLen = 7;
+
+<span class="comment">% 286 codewords transmitted for the given parameters which is 286*7 = 2002</span>
+<span class="comment">% bits aka 1001 symbols</span>
+numWords = ceil(numSym*log2(M)/msgLen);
+
+<span class="comment">% number of bits from 'msg' that have to be used for training</span>
+trainingBits = log2(M)*(numTraining/codeWordLen) * msgLen;
+
+tic;
+<span class="comment">% preallocate BER matrix like previously</span>
+BERvec2 = zeros(numIterations, SNRlen);
+numBits = msgLen*numWords;
+
+<span class="comment">% create encoder and decoder objects for the given BCH parameters</span>
+enc = comm.BCHEncoder(codeWordLen, msgLen);
+dec = comm.BCHDecoder(codeWordLen, msgLen);
+
+<span class="keyword">parfor</span> ii=1:numIterations
+
+    <span class="comment">% total bits we can generate is numWords*msgLen = 2002 bits = 1001 symbols</span>
+    msg = randi([0, 1], msgLen*numWords, 1);
+
+    <span class="comment">% encode msg with parity bits inserted after every 7 bits aka every</span>
+    <span class="comment">% message</span>
+    msg_enc = step(enc, msg);
+    a = msg_enc;                <span class="comment">% checkpoint</span>
+
+    <span class="comment">% pair up the bits to convert to decimal</span>
+    msg_enc = reshape(msg_enc,log2(M),length(msg_enc)/log2(M)).';
+    b = msg_enc;                <span class="comment">% checkpoint</span>
+
+    <span class="comment">% convert to decimal</span>
+    msg_enc = bi2de(msg_enc);
+
+    <span class="keyword">for</span> jj=1:SNRlen
+        <span class="comment">% qammod default parameters is gray code ordering and integer inputs</span>
+        tx = qammod(msg_enc, M, <span class="string">'UnitAveragePower'</span>, true);
+
+            txChan = filter(chan,1,tx);         <span class="comment">% apply the channel</span>
+            txNoisy = awgn(txChan,SNR_Vec(jj),<span class="string">'measured'</span>); <span class="comment">% add awgn</span>
+
+            eq1 = dfe(12,6, lms(0.01));         <span class="comment">% create equalizer objecct</span>
+            eq1.SigConst = qammod(0:M-1, M, <span class="string">'UnitAveragePower'</span>, true);
+            eq1.ResetBeforeFiltering = 0;
+
+            txNoisy = equalize(eq1,txNoisy,tx(1:numTraining));  <span class="comment">% equalize</span>
+            reset(eq1);
+
+        rx = qamdemod(txNoisy, M, <span class="string">'UnitAveragePower'</span>, true);    <span class="comment">% demodulate</span>
+
+        <span class="comment">% convert back to binary so that recieved msg can be decoded</span>
+        rxTmp = (de2bi(rx)).';
+        rxMsg = rxTmp(:);           <span class="comment">% columnize</span>
+
+        dec_msg = step(dec, rxMsg); <span class="comment">% decode</span>
+
+        <span class="comment">% calculate BER</span>
+        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+ber2 = mean(BERvec2,1);
+
+figure;
+semilogy(SNR_Vec, ber2, <span class="string">'DisplayName'</span>, <span class="string">"BER-4 with ISI"</span>)
+title(<span class="string">'Part B'</span>)
+hold <span class="string">on</span>;
+berTheory2 = berawgn(SNR_Vec,<span class="string">'qam'</span>, 4,<span class="string">'nondiff'</span>);
+semilogy(SNR_Vec,berTheory2,<span class="string">'DisplayName'</span>, <span class="string">'Theoretical BER for M=4'</span>)
+legend(<span class="string">'Location'</span>, <span class="string">'southwest'</span>)
+fprintf(<span class="string">'Part B: '</span>);
+toc
+
+bit_rate = (numBits - trainingBits)/numBits
+
+<span class="comment">% grab last non zero value of BER vector</span>
+lowest_non_zero_BER = ber2(find(ber2,1,<span class="string">'last'</span>))
+</pre><pre class="codeoutput">Part B: Elapsed time is 1210.396230 seconds.
+bit_rate =
+    0.5804
+lowest_non_zero_BER =
+   2.9260e-06
+</pre><img vspace="5" hspace="5" src="final_clean_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Matt Kribs, Richard Lee, Lucy Xu
+% Comm Theory Final Project
+% Description: A BER script for a wireless link simulation
+
+%% part a
+clear all;clc;close all
+
+%This section has two parts to it. The first part is matching AWGN
+%performance for M-ary QAM schemes for M = 4 and 16. The second part to
+%this section is to obtain a BER of 10e-4 using BPSK (M=2) after the message
+%bits have been modulated, channeled, added to awgn, equalized, and demodulated.
+
+numIter = 10000;              % number of iterations of the simulation
+nSym = 1000;                % number of symbols per packet
+SNR_Vec = 0:2:16;           % SNR value for the awgn function
+lenSNR = length(SNR_Vec);   
+m_ary = [2, 4, 16];         % M-ary number, 2 corresponds to binary modulation
+%chan = 1;                  % No channel
+chan = [1, 0.2, 0.4];       % moderate ISI
+
+% Not so invertible, severe ISI, we did not use this channel for any part
+% of this project
+%chan = [0.227 0.460 0.688 0.460 0.227]';   
+
+tic;
+trainlen = 300;             % number of training bits 
+displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"]; % plot labels
+
+for it=1:length(m_ary)
+    M = m_ary(it);
+    
+    berVec = zeros(numIter, lenSNR);    % preallocate BER matrix
+    
+    parfor ii = 1:numIter
+        % we generate a random decimal message everytime
+        msg = randi([0, M-1], nSym*(log2(M)), 1);  
+ 
+        % we turn the msg into bits here
+        % the transpose is so we can columnize
+        % we use bits to for the biterr func, but do not transmit this 
+        bits = de2bi(msg, 'left-msb').'; 
+        bits = bits(:);
+        
+        for jj = 1:lenSNR        % one iteration of the simulation at each SNR Value
+            tx = qammod(msg,M);  % modulate the msg
+               
+            % for 2-ary we filter, add awgn, and equalize
+            if M == 2
+                
+                % if there is no channel then the received msg is the same
+                % as the transmitted msg
+                if isequal(chan,1) 
+                    txChan = tx;
+                    txNoisy = txChan;
+                else
+                    txChan = filter(chan,1,tx);         % apply the channel
+                    txNoisy = awgn(txChan,SNR_Vec(jj)); % add AWGN
+                               
+                    % Originally we tried the linear equalizer but could
+                    % not get it down enough, so we switched to dfe
+                   
+                    % lineq = comm.LinearEqualizer('Algorithm','LMS', 'NumTaps',6,'StepSize',0.01); 
+                    % doesn't work on matlab 2018a
+                    
+                    % we also started off with simply feedforward taps but
+                    % it did not work well enough so we used feedback taps
+                    % as well
+                    % eq1 = lineareq(6, lms(0.01));
+                    
+                    eq1 = dfe(12,6, lms(0.01)); 
+                    eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);
+                    eq1.ResetBeforeFiltering = 1;
+            
+                    txNoisy = equalize(eq1,txNoisy,tx(1:trainlen)); % equalize
+                end
+                
+            % if we are 4-ary or 16-ary we only add awgn
+            else 
+                txNoisy = awgn(tx, SNR_Vec(jj) + 10*log10(log2(M)),'measured');
+            end
+            
+            rx = qamdemod(txNoisy,M); % demodulate the signal
+            
+            % Convert the received message to bits
+            % the transpose and the rx(:) is housekeeping - conceptually we are
+            % taking each row, appending it after the previous row, but we do
+            % this transposed since we are working with columns
+            rxTmp = de2bi(rx, 'left-msb').'; 
+            rxBits = rxTmp(:);
+            
+            % Compute and store the BER for this iteration
+            % We're interested in the BER, which is the 2nd output of BITERR
+            [~, berVec(ii,jj)] = biterr(bits(trainlen+1:end), rxBits(trainlen+1:end));  
+            
+        end  % End SNR iteration
+    end      % End numIter iteration
+    
+    % Compute and plot the mean BER
+    ber = mean(berVec,1);
+    
+    % print the BER at SNR = 12 for 2-ary
+    if M == 2
+        BER_at_12 = ber(7)
+    end
+    
+    % here we plot the figures
+    figure(it);
+    semilogy(SNR_Vec, ber, 'DisplayName', displayStr(it))
+    hold on;
+    
+    % plot different theoreticals depending on M
+    if M == 2
+        berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
+        semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
+    elseif M == 4
+        berTheory4 = berawgn(SNR_Vec,'qam', 4,'nondiff');
+        semilogy(SNR_Vec,berTheory4,'DisplayName', 'Theoretical BER for M=4')
+    elseif M == 16
+        berTheory16 = berawgn(SNR_Vec,'qam', 16,'nondiff');
+        semilogy(SNR_Vec,berTheory16, 'DisplayName', 'Theoretical BER for M=16');
+    end
+    
+    legend('Location', 'southwest')
+    title('Part A');
+    xlabel('SNR in dB');
+    ylabel('Bit Error Rate');
+    
+end
+fprintf('Part A: ');
+toc
+
+%% part b with BPSK 1/2 Convolutional Encoding
+
+% In this part, an encoding scheme will be added to the system to improve
+% the BER to 10e-6
+
+% BPSK with 1/2 convolutional encoding
+clear all;clc;close all
+
+% we initially tried 1/2 convolutional encoding since its less tedious to
+% implement than block codes but this proved to not be enough so please
+% find our trials with BCH
+
+% numIter = 0;
+% nSym = 500;    
+% SNR_Vec = 0:2:16;
+% lenSNR = length(SNR_Vec);
+% trainlen = 300;      
+% M_values = 2;
+% chan = [1, 0.2, 0.4];
+% 
+% displayStr = ["BER-2 with ISI","BER-4 No ISI", "BER-16 No ISI"];
+% 
+% tic;
+% for it=1:length(M_values)
+%     m_ary = M_values(it);
+%     berVec = zeros(numIter, lenSNR);
+%     for ii = 1:numIter
+% 
+%         msg = randi([0, m_ary-1], nSym*(log2(m_ary)), 1); 
+%         numBits = size(msg,1);
+%         % New bits must be generated at every iteration
+% 
+%         %encoding 1/2 convolutional
+%         K = 3;                %constraint length is how long a bit can affect the encoder output
+%         g_1 = '1+x+x^2';                
+%         g_2 = '1+x^2';        
+%         trellis = poly2trellis(K,{g_1,g_2});    %trellis is created 
+%         msg_enc = convenc(msg,trellis);         %input bits are encoded
+%         
+%         bits = de2bi(msg_enc, 'left-msb').'; %transpose here 
+%         bits = bits(:);
+%         
+%         for jj = 1:lenSNR               % one iteration of the simulation at each SNR Value
+%             tx = qammod(msg_enc,m_ary); % BPSK modulate the signal
+%             
+%             m_ary == 2
+%                 txChan = filter(chan,1,tx);         % apply the channel
+%                 txNoisy = awgn(txChan,SNR_Vec(jj)); % add AWGN
+%                     
+%                 sigConst = qammod(0:m_ary-1, m_ary, 'UnitAveragePower', true);
+%                 eq1 = dfe(12,6,lms(0.01)); 
+%                 eq1.SigConst = sigConst; 
+%                 eq1.ResetBeforeFiltering = 0;
+%                    
+%                 txNoisy = equalize(eq1,txNoisy,tx(1:trainlen)); % equalize
+%                 reset(eq1);
+%                     
+%                 rx = qamdemod(txNoisy,m_ary); %,'OutputType', 'integer'); % Demodulate
+%                 rxTmp = de2bi(rx, 'left-msb').'; 
+%                 
+%             tblen = (K - 1)*5;   %positive integer scalar that specifies the traceback depth
+%                                  %for rate 1/2, a typical value for tblen is about
+%                                  %five times the constraint length - 1
+%                                       
+%             rxMSG = (vitdec(rxTmp,trellis,tblen,'trunc','hard')).';
+%             %trunc: encoder is assumed to have started at the all zero state
+%             %hard: code contains binary input values                         
+%             
+%             % Compute and store the BER for this iteration
+%             % We're interested in the BER, which is the 2nd output of BITERR
+% 
+%             [~, berVec(ii,jj)] = biterr(msg(trainlen+1:end), rxMSG(trainlen+1:end)); 
+% 
+%         end  % End SNR iteration
+%     end      % End numIter iteration
+% end
+
+% % Compute and plot the mean BER
+%ber = mean(berVec,1);
+    
+% grab last non zero value and report on screen
+%lowest_non_zero_BER = ber(find(ber,1,'last'))
+
+% % calculate bit rate
+% bit_rate = (numBits - trainlen)/numBits
+
+% % plot the figure
+% figure('Name', 'Part B');
+% semilogy(SNR_Vec, ber, 'DisplayName', "BER-2 with ISI")
+% hold on;
+% berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
+% semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
+% legend('Location', 'southwest')
+% title('Reducing Error to 10e-6 for BPSK');
+% xlabel('SNR in dB');
+% ylabel('Bit Error Rate');
+% fprintf('Part B: ');
+% toc
+
+%% BPSK with BCH 15-7 encoding
+%clc;clear;close all
+% 
+% % We thought that we had to stick to BPSK (2-ary) so we have this section
+% % where we used BCH 15-7 encoding on 2-ary but after we realized we could
+% % have used QAM, we tried that out in the next section
+% 
+% numIterations = 1;  
+% numSymbols = 1000;
+% 
+% % We are allowed roughly 1000 symbols: we use this to find roughly how many words
+% % we can generate for BCH 15-7
+% % we use a ceiling function below to calculate precisely how many codewords
+% % we can send
+%  
+% % fter encoding, the number of total bits (including parity) that we use for training
+% numTraining = 150;
+% 
+% SNR_Vec = 0:2:16; 
+% SNRlen = length(SNR_Vec);
+% 
+% % same channel, Moderate ISI
+% chan = [1, 0.2, 0.4];
+% 
+% tic;
+% 
+% M = 2;
+% codeWordLen = 15;
+% msgLen = 7;
+% 
+% % the ceiling is to round up the number of words
+% 
+% % later, we use num words * msgLen to figure out how many bits we can
+% % generate, knowing that encoding will add 8 parity bits to each symbol
+% numWords = ceil(numSymbols/codeWordLen);
+% 
+% % number of training bits that we had to take from the original message
+% trainingBits = (numTraining/codeWordLen) * msgLen;
+% 
+% % make a 0 vector
+% BERvec2 = zeros(numIterations, SNRlen);
+% 
+% % We use the comm BCH encoder and decoder objects, make them once and reuse
+% enc = comm.BCHEncoder(codeWordLen, msgLen);
+% dec = comm.BCHDecoder(codeWordLen, msgLen);
+% 
+% for ii=1:numIterations
+%     % make a msg that is number of msg bits long, such that after encoding, 
+%     % there are approximately 100- symbols transmitted 
+%     msg = randi([0, M-1], msgLen * numWords, 1);
+%     numBits = size(msg,1);
+%     
+%     % BCH encode it. 469 bits generated above, 1005 symbols transmitted
+%     msg_enc = step(enc, msg);
+%     
+%     for jj=1:SNRlen
+%         
+%         tx = qammod(msg_enc, M);            % modulate the signal
+%         txChan = filter(chan,1,tx);         % apply the channel
+%         txNoisy = awgn(txChan,SNR_Vec(jj)); % add AWGN
+%         
+%         eq1 = dfe(12,6, lms(0.01));         % create equalizer object
+%         eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);
+%         eq1.ResetBeforeFiltering = 1;
+%        
+%         txNoisy = equalize(eq1,txNoisy,tx(1:numTraining));  % equalize
+%         rx = qamdemod(txNoisy, M);                          % demodulate
+%         dec_msg = step(dec, rx);                            % decode
+%         
+%         % calculate BER
+%         [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
+%     end
+% end
+% 
+% % average BER for each SNR
+%ber2 = mean(BERvec2,1);
+% 
+% % grab last non zero value and report on screen
+% lowest_non_zero_BER = ber2(find(ber2,1,'last'))
+% 
+% % calculate bit rate
+% bit_rate = (numBits - trainingBits)/numBits
+% 
+% % plot the figure
+% figure('Name', 'Part B');
+% semilogy(SNR_Vec, ber2, 'DisplayName', "BER-2 with ISI")
+% hold on;
+% berTheory2 = berawgn(SNR_Vec,'psk', 2,'nondiff');
+% semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=2')
+% legend('Location', 'southwest')
+% title('Reducing Error to 10e-6 for BPSK');
+% xlabel('SNR in dB');
+% ylabel('Bit Error Rate');
+% fprintf('Part B: ');
+% toc
+
+%% QAM with BCH 15-7
+
+clc;clear;close all
+
+% QAM with 4-ary should be able to imporve the bit rate because the number 
+% of bits per symbol is doubled 
+
+% same parameters from part a
+numIterations = 10000;
+numSym = 1000;
+SNR_Vec = 0:2:16;
+SNRlen = length(SNR_Vec);
+chan = [1, 0.2, 0.4];
+
+% number of codewords*2 that is used for training
+n = 60;    
+% number of symbols that is used for training aka number of msg bits*2 
+% that is used for training
+numTraining = 15*n;     
+
+M = 4;
+codeWordLen = 15;
+msgLen = 7;
+
+% 286 codewords transmitted for the given parameters which is 286*7 = 2002 
+% bits aka 1001 symbols
+numWords = ceil(numSym*log2(M)/msgLen);
+
+% number of bits from 'msg' that have to be used for training
+trainingBits = log2(M)*(numTraining/codeWordLen) * msgLen; 
+
+tic;
+% preallocate BER matrix like previously
+BERvec2 = zeros(numIterations, SNRlen);     
+numBits = msgLen*numWords;
+
+% create encoder and decoder objects for the given BCH parameters
+enc = comm.BCHEncoder(codeWordLen, msgLen); 
+dec = comm.BCHDecoder(codeWordLen, msgLen);
+
+parfor ii=1:numIterations
+    
+    % total bits we can generate is numWords*msgLen = 2002 bits = 1001 symbols
+    msg = randi([0, 1], msgLen*numWords, 1);
+    
+    % encode msg with parity bits inserted after every 7 bits aka every
+    % message
+    msg_enc = step(enc, msg);
+    a = msg_enc;                % checkpoint
+    
+    % pair up the bits to convert to decimal
+    msg_enc = reshape(msg_enc,log2(M),length(msg_enc)/log2(M)).';
+    b = msg_enc;                % checkpoint
+    
+    % convert to decimal
+    msg_enc = bi2de(msg_enc);
+    
+    for jj=1:SNRlen
+        % qammod default parameters is gray code ordering and integer inputs 
+        tx = qammod(msg_enc, M, 'UnitAveragePower', true);
+
+            txChan = filter(chan,1,tx);         % apply the channel
+            txNoisy = awgn(txChan,SNR_Vec(jj),'measured'); % add awgn
+
+            eq1 = dfe(12,6, lms(0.01));         % create equalizer objecct
+            eq1.SigConst = qammod(0:M-1, M, 'UnitAveragePower', true);
+            eq1.ResetBeforeFiltering = 0;
+            
+            txNoisy = equalize(eq1,txNoisy,tx(1:numTraining));  % equalize
+            reset(eq1);
+        
+        rx = qamdemod(txNoisy, M, 'UnitAveragePower', true);    % demodulate
+        
+        % convert back to binary so that recieved msg can be decoded
+        rxTmp = (de2bi(rx)).';
+        rxMsg = rxTmp(:);           % columnize
+        
+        dec_msg = step(dec, rxMsg); % decode
+        
+        % calculate BER
+        [~, BERvec2(ii,jj)] = biterr(msg(trainingBits+1:end), dec_msg(trainingBits+1:end));  
+    end
+end
+
+ber2 = mean(BERvec2,1);
+
+figure;
+semilogy(SNR_Vec, ber2, 'DisplayName', "BER-4 with ISI")
+title('Part B')
+hold on;
+berTheory2 = berawgn(SNR_Vec,'qam', 4,'nondiff');
+semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=4')
+legend('Location', 'southwest')
+fprintf('Part B: ');
+toc
+
+bit_rate = (numBits - trainingBits)/numBits
+
+% grab last non zero value of BER vector 
+lowest_non_zero_BER = ber2(find(ber2,1,'last'))
+
+
+
+
+##### SOURCE END #####
+--></body></html>
