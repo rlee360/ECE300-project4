@@ -76,7 +76,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">%this section is to obtain a BER of 10e-4 using BPSK (M=2) after the message</span>
 <span class="comment">%bits have been modulated, channeled, added to awgn, equalized, and demodulated.</span>
 
-numIter = 0;              <span class="comment">% number of iterations of the simulation</span>
+numIter = 1000;              <span class="comment">% number of iterations of the simulation</span>
 nSym = 1000;                <span class="comment">% number of symbols per packet</span>
 SNR_Vec = 0:2:16;           <span class="comment">% SNR value for the awgn function</span>
 lenSNR = length(SNR_Vec);
@@ -194,9 +194,11 @@ displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">
 <span class="keyword">end</span>
 fprintf(<span class="string">'Part A: '</span>);
 toc
-</pre><pre class="codeoutput">BER_at_12 =
-   NaN
-Part A: Elapsed time is 1.300882 seconds.
+</pre><pre class="codeoutput">Starting parallel pool (parpool) using the 'local' profile ...
+Connected to the parallel pool (number of workers: 8).
+BER_at_12 =
+   1.1571e-04
+Part A: Elapsed time is 76.577509 seconds.
 </pre><img vspace="5" hspace="5" src="final_clean_01.png" alt=""> <img vspace="5" hspace="5" src="final_clean_02.png" alt=""> <img vspace="5" hspace="5" src="final_clean_03.png" alt=""> <h2 id="3">part b with BPSK 1/2 Convolutional Encoding</h2><pre class="codeinput"><span class="comment">% In this part, an encoding scheme will be added to the system to improve</span>
 <span class="comment">% the BER to 10e-6</span>
 
@@ -393,7 +395,7 @@ clear <span class="string">all</span>;clc;close <span class="string">all</span>
 <span class="comment">% of bits per symbol is doubled</span>
 
 <span class="comment">% same parameters from part a</span>
-numIterations = 0;
+numIterations = 10000;
 numSym = 1000;
 SNR_Vec = 0:2:16;
 SNRlen = length(SNR_Vec);
@@ -484,11 +486,11 @@ bit_rate = (numBits - trainingBits)/numBits
 
 <span class="comment">% grab last non zero value of BER vector</span>
 lowest_non_zero_BER = ber2(find(ber2,1,<span class="string">'last'</span>))
-</pre><pre class="codeoutput">Part B: Elapsed time is 0.567808 seconds.
+</pre><pre class="codeoutput">Part B: Elapsed time is 1218.311197 seconds.
 bit_rate =
     0.5804
 lowest_non_zero_BER =
-   NaN
+   4.5611e-06
 </pre><img vspace="5" hspace="5" src="final_clean_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % Matt Kribs, Richard Lee, Lucy Xu
@@ -503,7 +505,7 @@ clear all;clc;close all
 %this section is to obtain a BER of 10e-4 using BPSK (M=2) after the message
 %bits have been modulated, channeled, added to awgn, equalized, and demodulated.
 
-numIter = 0;              % number of iterations of the simulation
+numIter = 1000;              % number of iterations of the simulation
 nSym = 1000;                % number of symbols per packet
 SNR_Vec = 0:2:16;           % SNR value for the awgn function
 lenSNR = length(SNR_Vec);   
@@ -825,7 +827,7 @@ clc;clear;close all
 % of bits per symbol is doubled 
 
 % same parameters from part a
-numIterations = 0;
+numIterations = 10000;
 numSym = 1000;
 SNR_Vec = 0:2:16;
 SNRlen = length(SNR_Vec);
