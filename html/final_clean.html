@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>final_clean</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-25"><meta name="DC.source" content="final_clean.m"><style type="text/css">
+      --><title>final_clean</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-27"><meta name="DC.source" content="final_clean.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -198,7 +198,7 @@ toc
 Connected to the parallel pool (number of workers: 8).
 BER_at_12 =
    1.1571e-04
-Part A: Elapsed time is 75.531990 seconds.
+Part A: Elapsed time is 76.577509 seconds.
 </pre><img vspace="5" hspace="5" src="final_clean_01.png" alt=""> <img vspace="5" hspace="5" src="final_clean_02.png" alt=""> <img vspace="5" hspace="5" src="final_clean_03.png" alt=""> <h2 id="3">part b with BPSK 1/2 Convolutional Encoding</h2><pre class="codeinput"><span class="comment">% In this part, an encoding scheme will be added to the system to improve</span>
 <span class="comment">% the BER to 10e-6</span>
 
@@ -486,11 +486,11 @@ bit_rate = (numBits - trainingBits)/numBits
 
 <span class="comment">% grab last non zero value of BER vector</span>
 lowest_non_zero_BER = ber2(find(ber2,1,<span class="string">'last'</span>))
-</pre><pre class="codeoutput">Part B: Elapsed time is 1193.003264 seconds.
+</pre><pre class="codeoutput">Part B: Elapsed time is 1218.311197 seconds.
 bit_rate =
     0.5804
 lowest_non_zero_BER =
-   2.7539e-06
+   4.5611e-06
 </pre><img vspace="5" hspace="5" src="final_clean_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % Matt Kribs, Richard Lee, Lucy Xu

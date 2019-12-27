@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>lucy_qam4</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-26"><meta name="DC.source" content="lucy_qam4.m"><style type="text/css">
+      --><title>lucy_qam4</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-27"><meta name="DC.source" content="lucy_qam4.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -71,7 +71,7 @@ clear <span class="string">all</span>;clc; close <span class="string">all</span>
 </pre><h2 id="2">part a</h2><pre class="codeinput"><span class="comment">% For the final version of this project, you must use these 3</span>
 <span class="comment">% parameter. You will likely want to set numIter to 1 while you debug your</span>
 <span class="comment">% link, and then increase it to get an average BER.</span>
-numIter = 0;  <span class="comment">% The number of iterations of the simulation</span>
+numIter = 10000;  <span class="comment">% The number of iterations of the simulation</span>
 nSym = 1000;    <span class="comment">% The number of symbols per packet</span>
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
@@ -156,6 +156,11 @@ displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">
     <span class="comment">% Compute and plot the mean BER</span>
     ber = mean(berVec,1);
 
+    <span class="comment">% print the BER at SNR = 12 for 2-ary</span>
+    <span class="keyword">if</span> M == 2
+        BER_at_12 = ber(7)
+    <span class="keyword">end</span>
+
     figure(it);
     semilogy(SNR_Vec, ber, <span class="string">'DisplayName'</span>, displayStr(it))
     hold <span class="string">on</span>;
@@ -178,7 +183,9 @@ displayStr = [<span class="string">"BER-2 with ISI"</span>,<span class="string">
 
 fprintf(<span class="string">'Part A: '</span>);
 toc
-</pre><pre class="codeoutput">Part A: Elapsed time is 0.870217 seconds.
+</pre><pre class="codeoutput">BER_at_12 =
+   2.1529e-04
+Part A: Elapsed time is 571.268608 seconds.
 </pre><img vspace="5" hspace="5" src="lucy_qam4_01.png" alt=""> <img vspace="5" hspace="5" src="lucy_qam4_02.png" alt=""> <img vspace="5" hspace="5" src="lucy_qam4_03.png" alt=""> <h2 id="3">part b</h2><pre class="codeinput">clc;clear;close <span class="string">all</span>
 tic;
 
@@ -205,6 +212,7 @@ numWords = ceil(numSym*log2(M)/msgLen);
 
 <span class="comment">%number of msg bits that have to be used for training 840</span>
 trainingBits = log2(M) * (numTraining/codeWordLen) * msgLen;
+numBits = msgLen*numWords;
 
 BERvec2 = zeros(numIterations, SNRlen);
 
@@ -212,7 +220,7 @@ enc = comm.BCHEncoder(codeWordLen, msgLen);
 dec = comm.BCHDecoder(codeWordLen, msgLen);
 
 
-<span class="keyword">for</span> ii=1:numIterations
+<span class="keyword">parfor</span> ii=1:numIterations
     <span class="comment">%total bits we can generate is numWords*msgLen=2002 bits</span>
     msg = randi([0, 1], msgLen*numWords, 1);
     numBits = size(msg,1);
@@ -227,7 +235,7 @@ dec = comm.BCHDecoder(codeWordLen, msgLen);
     <span class="comment">%convert to decimal</span>
     msg_enc = bi2de(msg_enc);
 
-    <span class="keyword">parfor</span> jj=1:SNRlen
+    <span class="keyword">for</span> jj=1:SNRlen
         <span class="comment">%default gray code ordering and integer inputs</span>
         tx = qammod(msg_enc, M, <span class="string">'UnitAveragePower'</span>, true);
 
@@ -260,7 +268,8 @@ dec = comm.BCHDecoder(codeWordLen, msgLen);
 ber2 = mean(BERvec2,1);
 
 <span class="comment">% grab last non zero value</span>
-ber2(find(ber2,1,<span class="string">'last'</span>));
+lowest_non_zero_BER = ber2(find(ber2,1,<span class="string">'last'</span>))
+SNR_at_12_ber2 = ber2(7)
 
 bit_rate = (numBits - trainingBits)/numBits
 
@@ -272,17 +281,13 @@ semilogy(SNR_Vec,berTheory2,<span class="string">'DisplayName'</span>, <span cla
 legend(<span class="string">'Location'</span>, <span class="string">'southwest'</span>)
 fprintf(<span class="string">'Part B: '</span>);
 toc
-berTheory2
-</pre><pre class="codeoutput">Starting parallel pool (parpool) using the 'local' profile ...
-Connected to the parallel pool (number of workers: 8).
+</pre><pre class="codeoutput">lowest_non_zero_BER =
+   2.5818e-07
+SNR_at_12_ber2 =
+   2.5818e-07
 bit_rate =
     0.5804
-Part B: Elapsed time is 3000.998023 seconds.
-berTheory2 =
-  Columns 1 through 7
-    0.0786    0.0375    0.0125    0.0024    0.0002    0.0000    0.0000
-  Columns 8 through 9
-    0.0000    0.0000
+Part B: Elapsed time is 1208.823328 seconds.
 </pre><img vspace="5" hspace="5" src="lucy_qam4_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % A skeleton BER script for a wireless link simulation
@@ -293,7 +298,7 @@ clear all;clc; close all
 % For the final version of this project, you must use these 3
 % parameter. You will likely want to set numIter to 1 while you debug your
 % link, and then increase it to get an average BER.
-numIter = 0;  % The number of iterations of the simulation
+numIter = 10000;  % The number of iterations of the simulation
 nSym = 1000;    % The number of symbols per packet
 SNR_Vec = 0:2:16;
 lenSNR = length(SNR_Vec);
@@ -377,6 +382,11 @@ for it=1:length(m_ary)
 
     % Compute and plot the mean BER
     ber = mean(berVec,1);
+   
+    % print the BER at SNR = 12 for 2-ary
+    if M == 2
+        BER_at_12 = ber(7)
+    end
     
     figure(it);
     semilogy(SNR_Vec, ber, 'DisplayName', displayStr(it))
@@ -428,6 +438,7 @@ numWords = ceil(numSym*log2(M)/msgLen);
 
 %number of msg bits that have to be used for training 840
 trainingBits = log2(M) * (numTraining/codeWordLen) * msgLen; 
+numBits = msgLen*numWords;
 
 BERvec2 = zeros(numIterations, SNRlen);
 
@@ -435,7 +446,7 @@ enc = comm.BCHEncoder(codeWordLen, msgLen);
 dec = comm.BCHDecoder(codeWordLen, msgLen);
 
 
-for ii=1:numIterations
+parfor ii=1:numIterations
     %total bits we can generate is numWords*msgLen=2002 bits
     msg = randi([0, 1], msgLen*numWords, 1);
     numBits = size(msg,1);
@@ -450,7 +461,7 @@ for ii=1:numIterations
     %convert to decimal
     msg_enc = bi2de(msg_enc);
     
-    parfor jj=1:SNRlen
+    for jj=1:SNRlen
         %default gray code ordering and integer inputs 
         tx = qammod(msg_enc, M, 'UnitAveragePower', true);
 
@@ -483,7 +494,8 @@ end
 ber2 = mean(BERvec2,1);
 
 % grab last non zero value
-ber2(find(ber2,1,'last'));
+lowest_non_zero_BER = ber2(find(ber2,1,'last'))
+SNR_at_12_ber2 = ber2(7)
 
 bit_rate = (numBits - trainingBits)/numBits
 
@@ -495,7 +507,6 @@ semilogy(SNR_Vec,berTheory2,'DisplayName', 'Theoretical BER for M=4')
 legend('Location', 'southwest')
 fprintf('Part B: ');
 toc
-berTheory2
 
 ##### SOURCE END #####
 --></body></html>
